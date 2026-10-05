@@ -1,12 +1,21 @@
 package mx.edu.utez.Proyecto._D.controller;
-import mx.edu.utez.Proyecto._D.controller.dto.Peticion2DTO;
-import mx.edu.utez.Proyecto._D.controller.dto.RequestBodyDTO;
+import jakarta.validation.Valid;
+import mx.edu.utez.Proyecto._D.controller.dto.*;
+import mx.edu.utez.Proyecto._D.service.MyService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin({"*"})
 @RequestMapping("/my_services")
 public class MyController {
+
+    private final MyService myService;
+
+    //inyeccion de dependecias por medio del constructor
+    public MyController(MyService myService) {
+        this.myService = myService;
+    }
 
     @GetMapping
     public String miPrimerServicio() {
@@ -30,11 +39,14 @@ public class MyController {
         return "El id es: " + id;
     }
     @PostMapping("/request-body")
-    public String requestBody(@RequestBody RequestBodyDTO payLoad) {
+    // response entity es una clase que me permite personalizar la respuesta que se manda al cliente
+    public ResponseEntity<RequestBodyDTO> requestBodyDTO (@RequestBody @Valid RequestBodyDTO payLoad) {
         System.out.println(payLoad.getNombre());
         System.out.println(payLoad.getEdad());
         System.out.println(payLoad.getCorreo());
-        return "servicio con cuerpo";
+        return ResponseEntity
+                .status(201)
+                .body(payLoad);
     }
 
     @PostMapping("/fizzbuzz")
@@ -77,7 +89,6 @@ public class MyController {
 
         return "Paulo Alejandro Jiménez Villegas";
     }
-
     @GetMapping("/fizzbuzz/{n}")
     public String fizzBuzz(@PathVariable int n) {
     System.out.println("Valor de n recibido: " + n);
@@ -95,7 +106,6 @@ public class MyController {
         }
     return "Paulo Alejandro Jiménez Villegas";
     }
-
     @GetMapping("/fibonacci/{n}")
     public String fibonacci(@PathVariable int n) {
         System.out.println("Valor de n recibido: " + n);
@@ -109,6 +119,30 @@ public class MyController {
             b = siguiente;
         }
         return "Paulo Alejandro Jiménez Villegas";
+    }
+
+    @PostMapping("/calculadora")
+    public ResponseEntity<ResponseCalculadoraDTO> calculadora (@RequestBody @Valid RequestCalculadoraDTO payload) {
+
+        return ResponseEntity.status(200).body(
+                myService.calculadora(payload)
+        );
+    }
+
+    @PostMapping("/calcularCosto")
+    public ResponseEntity<ResponseEnvioDTO> cotizarPaquete(@RequestBody @Valid RequestEnvioDTO payload) {
+        ResponseEnvioDTO respuesta = myService.calcularCosto(payload);
+        return ResponseEntity.ok(respuesta);
+    }
+
+    @PostMapping("/calcularRenta")
+    public ResponseEntity<ResponseRentaDTO> cotizarRenta(@RequestBody @Valid RequestRentaDTO payload) {
+        return ResponseEntity.ok(myService.calcularRenta(payload));
+    }
+
+    @PostMapping("/calcularHospedaje")
+    public ResponseEntity<ResponseHospedajeDTO> cotizarHospedaje(@RequestBody @Valid RequestHospedajeDTO payload) {
+        return ResponseEntity.ok(myService.calcularHospedaje(payload));
     }
 }
 
